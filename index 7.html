@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIT Canteen | The Ultimate Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Bebas+Neue&family=Space+Mono&display=swap" rel="stylesheet">
+    <style>
+/* --- CSS Variables & Setup --- */
+:root {
+    --bg-base: #0f172a;
+    --bg-secondary: #1e293b;
+    --card-bg: rgba(30, 41, 59, 0.6);
+    --text-main: #f8fafc;
+    --text-muted: #cbd5e1;
+    --neon-blue: #38bdf8;
+    --neon-green: #4ade80;
+    --neon-purple: #c084fc;
+    --neon-orange: #fb923c;
+    --neon-pink: #f43f5e;
+    --transition: all 0.3s ease;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Outfit', sans-serif; background-color: var(--bg-base); color: var(--text-main); }
+
+/* --- THE CSS MAGIC: Checkboxes & Counters --- */
+/* Hide checkboxes using position: fixed so focusing them doesn't force the browser to scroll to the top! */
+input[type="checkbox"] { 
+    position: fixed; 
+    top: 0;
+    left: 0;
+    opacity: 0; 
+    pointer-events: none; 
+    z-index: -1; 
+}
+
+/* Initialize Counters on the State Machine container */
+.state-machine {
+    counter-reset: totalBill 0 totalProtein 0;
+}
+
+/* 
+   Map each checkbox to its integer values using counter-increment.
+   When checked, it adds to the running total.
+*/
+#item-misal:checked { counter-increment: totalBill 45 totalProtein 10; }
+#item-vadapav:checked { counter-increment: totalBill 30 totalProtein 5; }
+#item-poha:checked { counter-increment: totalBill 25 totalProtein 4; }
+#item-samosa:checked { counter-increment: totalBill 20 totalProtein 2; }
+#item-dosa:checked { counter-increment: totalBill 40 totalProtein 5; }
+
+#item-bhurji:checked { counter-increment: totalBill 50 totalProtein 24; }
+#item-matki:checked { counter-increment: totalBill 40 totalProtein 14; }
+#item-chana:checked { counter-increment: totalBill 30 totalProtein 12; }
+#item-chicken:checked { counter-increment: totalBill 80 totalProtein 45; }
+
+#item-thali:checked { counter-increment: totalBill 80 totalProtein 15; }
+#item-biryani:checked { counter-increment: totalBill 130 totalProtein 35; }
+#item-paneer:checked { counter-increment: totalBill 90 totalProtein 15; }
+
+#item-maggi:checked { counter-increment: totalBill 45 totalProtein 8; }
+#item-coffee:checked { counter-increment: totalBill 40 totalProtein 4; }
+#item-sandwich:checked { counter-increment: totalBill 50 totalProtein 8; }
+#item-fries:checked { counter-increment: totalBill 60 totalProtein 4; }
+#item-redbull:checked { counter-increment: totalBill 120 totalProtein 0; }
+
+/* Output the counters to the screen */
+.bill-total::after { content: counter(totalBill); }
+.protein-total::before { content: counter(totalProtein); }
+
+/* --- THE CSS MAGIC: Easter Egg State --- */
+.secret-menu { display: none; margin: 4rem auto; max-width: 600px; padding: 2rem; border: 2px dashed var(--neon-pink); }
+.c-secret h3 { color: var(--neon-pink); }
+
+/* When Hack Mode is checked, transform the entire app */
+#hack-mode:checked ~ .app-wrapper {
+    filter: invert(1) hue-rotate(180deg);
+    font-family: 'Space Mono', monospace;
+    background-image: linear-gradient(rgba(0, 255, 0, 0.1) 1px, transparent 1px);
+    background-size: 100% 4px;
+}
+
+#hack-mode:checked ~ .app-wrapper .secret-menu { display: block; animation: glitch 0.5s infinite; }
+#hack-mode:checked ~ .app-wrapper .logo::after { content: " // ROOT ACCESS"; color: #0f0; }
+#hack-mode:checked ~ .app-wrapper .hero h1 { text-transform: uppercase; }
+
+@keyframes glitch {
+    0% { transform: translate(0) }
+    20% { transform: translate(-2px, 2px) }
+    40% { transform: translate(-2px, -2px) }
+    60% { transform: translate(2px, 2px) }
+    80% { transform: translate(2px, -2px) }
+    100% { transform: translate(0) }
+}
+
+/* --- UI Styling --- */
+.navbar { padding: 1.2rem 5%; display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.9); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.logo { font-size: 2rem; font-weight: 900; color: var(--neon-blue); cursor: pointer; text-transform: uppercase; }
+.nav-links a { color: var(--text-muted); text-decoration: none; margin-left: 2rem; font-weight: 500; }
+
+.hero { text-align: center; padding: 6rem 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.hero h1 { font-size: 4rem; font-weight: 900; background: linear-gradient(to right, var(--neon-blue), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.hint { color: var(--neon-orange); font-size: 0.9rem; margin-top: 1rem; font-family: monospace; }
+
+.section-wrapper { padding: 5rem 5%; max-width: 1400px; margin: 0 auto; }
+.section-title { font-size: 2.5rem; text-align: center; margin-bottom: 3rem; text-transform: uppercase; letter-spacing: 2px; }
+
+/* Meme Section Styles */
+.meme-board { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 4rem; }
+.meme-card { width: 350px; height: 350px; position: relative; border-radius: 15px; overflow: hidden; border: 3px solid var(--bg-secondary); transition: var(--transition); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+.meme-card:hover { border-color: var(--neon-orange); transform: rotate(2deg) scale(1.05); box-shadow: 0 0 25px rgba(251, 146, 60, 0.4); z-index: 10; }
+.meme-card img { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7); }
+.meme-text { position: absolute; width: 100%; text-align: center; font-family: 'Bebas Neue', sans-serif; font-size: 2.5rem; color: white; text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000; line-height: 1.1; padding: 0 10px; pointer-events: none; }
+.meme-text.top { top: 15px; }
+.meme-text.bottom { bottom: 15px; }
+
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; }
+.menu-card { background: var(--card-bg); border-radius: 15px; padding: 2rem; border: 1px solid rgba(255,255,255,0.05); }
+.menu-card h3 { font-size: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 1rem; }
+.c-1 h3 { color: var(--neon-blue); } 
+.c-2 h3 { color: var(--neon-green); } 
+.c-3 h3 { color: var(--neon-pink); } 
+.c-4 h3 { color: var(--neon-purple); }
+
+/* Interactive Labels (CSS Buttons) */
+.menu-item {
+    display: flex; justify-content: space-between; align-items: center; padding: 15px;
+    background: rgba(0,0,0,0.2); margin-bottom: 10px; border-radius: 10px; cursor: pointer;
+    border: 2px solid transparent; transition: var(--transition);
+}
+.menu-item:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
+.item-name { display: block; font-weight: 600; font-size: 1.1rem; }
+.item-desc { font-size: 0.85rem; color: var(--text-muted); }
+.price-box { display: flex; align-items: center; gap: 15px; }
+.item-price { font-weight: 900; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 6px; }
+.check-indicator { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--text-muted); position: relative; }
+
+.menu-item-visual { display: flex; justify-content: space-between; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px; }
+
+/* Active States (When checkboxes are checked) */
+
+/* Group 1 (Blue) */
+#item-misal:checked ~ .app-wrapper label[for="item-misal"],
+#item-vadapav:checked ~ .app-wrapper label[for="item-vadapav"],
+#item-poha:checked ~ .app-wrapper label[for="item-poha"],
+#item-samosa:checked ~ .app-wrapper label[for="item-samosa"],
+#item-dosa:checked ~ .app-wrapper label[for="item-dosa"] { border-color: var(--neon-blue); background: rgba(56, 189, 248, 0.1); }
+
+#item-misal:checked ~ .app-wrapper label[for="item-misal"] .check-indicator::after,
+#item-vadapav:checked ~ .app-wrapper label[for="item-vadapav"] .check-indicator::after,
+#item-poha:checked ~ .app-wrapper label[for="item-poha"] .check-indicator::after,
+#item-samosa:checked ~ .app-wrapper label[for="item-samosa"] .check-indicator::after,
+#item-dosa:checked ~ .app-wrapper label[for="item-dosa"] .check-indicator::after { content: '✓'; position: absolute; top: -2px; left: 4px; color: var(--neon-blue); font-weight: bold; }
+
+/* Group 2 (Green) */
+#item-bhurji:checked ~ .app-wrapper label[for="item-bhurji"],
+#item-matki:checked ~ .app-wrapper label[for="item-matki"],
+#item-chana:checked ~ .app-wrapper label[for="item-chana"],
+#item-chicken:checked ~ .app-wrapper label[for="item-chicken"] { border-color: var(--neon-green); background: rgba(74, 222, 128, 0.1); }
+
+#item-bhurji:checked ~ .app-wrapper label[for="item-bhurji"] .check-indicator::after,
+#item-matki:checked ~ .app-wrapper label[for="item-matki"] .check-indicator::after,
+#item-chana:checked ~ .app-wrapper label[for="item-chana"] .check-indicator::after,
+#item-chicken:checked ~ .app-wrapper label[for="item-chicken"] .check-indicator::after { content: '✓'; position: absolute; top: -2px; left: 4px; color: var(--neon-green); font-weight: bold; }
+
+/* Group 3 (Pink) */
+#item-thali:checked ~ .app-wrapper label[for="item-thali"],
+#item-biryani:checked ~ .app-wrapper label[for="item-biryani"],
+#item-paneer:checked ~ .app-wrapper label[for="item-paneer"] { border-color: var(--neon-pink); background: rgba(244, 63, 94, 0.1); }
+
+#item-thali:checked ~ .app-wrapper label[for="item-thali"] .check-indicator::after,
+#item-biryani:checked ~ .app-wrapper label[for="item-biryani"] .check-indicator::after,
+#item-paneer:checked ~ .app-wrapper label[for="item-paneer"] .check-indicator::after { content: '✓'; position: absolute; top: -2px; left: 4px; color: var(--neon-pink); font-weight: bold; }
+
+/* Group 4 (Purple) */
+#item-maggi:checked ~ .app-wrapper label[for="item-maggi"],
+#item-coffee:checked ~ .app-wrapper label[for="item-coffee"],
+#item-sandwich:checked ~ .app-wrapper label[for="item-sandwich"],
+#item-fries:checked ~ .app-wrapper label[for="item-fries"],
+#item-redbull:checked ~ .app-wrapper label[for="item-redbull"] { border-color: var(--neon-purple); background: rgba(192, 132, 252, 0.1); }
+
+#item-maggi:checked ~ .app-wrapper label[for="item-maggi"] .check-indicator::after,
+#item-coffee:checked ~ .app-wrapper label[for="item-coffee"] .check-indicator::after,
+#item-sandwich:checked ~ .app-wrapper label[for="item-sandwich"] .check-indicator::after,
+#item-fries:checked ~ .app-wrapper label[for="item-fries"] .check-indicator::after,
+#item-redbull:checked ~ .app-wrapper label[for="item-redbull"] .check-indicator::after { content: '✓'; position: absolute; top: -2px; left: 4px; color: var(--neon-purple); font-weight: bold; }
+
+/* Floating Cart UI */
+.floating-cart {
+    position: fixed; bottom: 30px; right: 30px; background: rgba(15, 23, 42, 0.95);
+    border: 2px solid var(--neon-blue); border-radius: 15px; padding: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.8), 0 0 20px rgba(56, 189, 248, 0.2);
+    backdrop-filter: blur(10px); min-width: 280px; z-index: 1000;
+}
+.cart-header { font-family: 'Space Mono', monospace; color: var(--neon-blue); border-bottom: 1px solid rgba(56, 189, 248, 0.3); padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; letter-spacing: 1px; }
+.cart-stats { display: flex; flex-direction: column; gap: 15px; }
+.stat-box { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; }
+.stat-label { font-weight: 500; color: var(--text-muted); }
+.stat-value { font-size: 1.5rem; font-weight: 900; color: var(--neon-green); font-family: 'Space Mono', monospace; }
+.cart-message { margin-top: 15px; font-size: 0.8rem; color: var(--text-muted); text-align: center; }
+
+@media (max-width: 768px) {
+    .floating-cart { bottom: 0; right: 0; left: 0; border-radius: 20px 20px 0 0; border-width: 2px 0 0 0; }
+}
+    </style>
+</head>
+<body>
+
+    <!-- 
+      NO JAVASCRIPT ALLOWED.
+      These hidden checkboxes power the entire state machine, cart, and calculator using pure CSS.
+    -->
+    <div class="state-machine">
+        <!-- Easter Egg Toggle -->
+        <input type="checkbox" id="hack-mode">
+
+        <!-- Menu Item Toggles -->
+        <input type="checkbox" id="item-misal">
+        <input type="checkbox" id="item-vadapav">
+        <input type="checkbox" id="item-poha">
+        <input type="checkbox" id="item-samosa">
+        <input type="checkbox" id="item-dosa">
+        
+        <input type="checkbox" id="item-bhurji">
+        <input type="checkbox" id="item-matki">
+        <input type="checkbox" id="item-chana">
+        <input type="checkbox" id="item-chicken">
+        
+        <input type="checkbox" id="item-thali">
+        <input type="checkbox" id="item-biryani">
+        <input type="checkbox" id="item-paneer">
+        
+        <input type="checkbox" id="item-maggi">
+        <input type="checkbox" id="item-coffee">
+        <input type="checkbox" id="item-sandwich">
+        <input type="checkbox" id="item-fries">
+        <input type="checkbox" id="item-redbull">
+
+        <div class="app-wrapper">
+            <!-- Navigation -->
+            <nav class="navbar">
+                <!-- Clicking the logo triggers the Easter Egg -->
+                <label for="hack-mode" class="logo">SIT Canteen</label>
+                <div class="nav-links">
+                    <a href="#memes">Vibe Check</a>
+                    <a href="#menu">The Vault</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </nav>
+
+            <!-- Hero Section -->
+            <header class="hero">
+                <div class="hero-content">
+                    <h1>Upgrade Your Fuel</h1>
+                    <p>Select your meals below. Check your total bill and track your protein instantly.</p>
+                    <p class="hint">PS: Try clicking the logo.</p>
+                </div>
+            </header>
+
+            <!-- Memes Section -->
+            <section id="memes" class="section-wrapper">
+                <h2 class="section-title" style="color: var(--neon-orange);">Canteen Vibe Check</h2>
+                
+                <div class="meme-board">
+                    <!-- Meme 1 -->
+                    <div class="meme-card">
+                        <img src="https://images.unsplash.com/photo-1513622470522-26c308a7dc0f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Code Meme">
+                        <div class="meme-text top">HOSTEL MESS FOOD:<br>EXISTS</div>
+                        <div class="meme-text bottom">ME OMW TO THE<br>CANTEEN</div>
+                    </div>
+
+                    <!-- Meme 2 -->
+                    <div class="meme-card">
+                        <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Gym Meme">
+                        <div class="meme-text top">EATING MATKI USAL<br>& EGG BHURJI</div>
+                        <div class="meme-text bottom">MACROS SECURED</div>
+                    </div>
+
+                    <!-- Meme 3 -->
+                    <div class="meme-card">
+                        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Gaming Meme">
+                        <div class="meme-text top">"JUST ONE MORE<br>BGMI MATCH"</div>
+                        <div class="meme-text bottom">*ORDERING DOUBLE<br>MASALA MAGGI AT 10PM*</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Secret Menu (Revealed only in Hack Mode) -->
+            <div class="secret-menu">
+                <h2 class="section-title">⚠️ CLASSIFIED ACCESS GRANTED ⚠️</h2>
+                <div class="menu-card c-secret">
+                    <h3>Dark Web Specials</h3>
+                    <div class="menu-item-visual">
+                        <div>
+                            <span class="item-name">The "Null Pointer" Burger</span>
+                            <span class="item-desc">A burger so spicy it causes a stack overflow.</span>
+                        </div>
+                        <span class="item-price">₹404</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Section -->
+            <section id="menu" class="section-wrapper">
+                <h2 class="section-title">The Vault</h2>
+                
+                <div class="menu-grid">
+                    
+                    <!-- Morning Setup -->
+                    <div class="menu-card c-1">
+                        <h3>🌅 Morning Setup</h3>
+                        
+                        <label for="item-misal" class="menu-item">
+                            <div>
+                                <span class="item-name">Classic Misal Pav</span>
+                                <span class="item-desc">10g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹45</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-vadapav" class="menu-item">
+                            <div>
+                                <span class="item-name">Vada Pav (2 pcs)</span>
+                                <span class="item-desc">5g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹30</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-poha" class="menu-item">
+                            <div>
+                                <span class="item-name">Kanda Poha</span>
+                                <span class="item-desc">4g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹25</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-samosa" class="menu-item">
+                            <div>
+                                <span class="item-name">Samosa</span>
+                                <span class="item-desc">2g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹20</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-dosa" class="menu-item">
+                            <div>
+                                <span class="item-name">Masala Dosa</span>
+                                <span class="item-desc">5g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹40</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Post-Workout -->
+                    <div class="menu-card c-2">
+                        <h3>💪 The Iron-Lifter</h3>
+                        
+                        <label for="item-bhurji" class="menu-item">
+                            <div>
+                                <span class="item-name">4-Egg Bhurji</span>
+                                <span class="item-desc">24g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹50</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-matki" class="menu-item">
+                            <div>
+                                <span class="item-name">Sprouted Matki Usal</span>
+                                <span class="item-desc">14g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹40</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-chana" class="menu-item">
+                            <div>
+                                <span class="item-name">Roasted Chana Bowl</span>
+                                <span class="item-desc">12g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹30</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-chicken" class="menu-item">
+                            <div>
+                                <span class="item-name">Boiled Chicken (150g)</span>
+                                <span class="item-desc">45g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹80</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Main Execution (Lunch/Dinner) -->
+                    <div class="menu-card c-3">
+                        <h3>🍛 Main Execution</h3>
+                        
+                        <label for="item-thali" class="menu-item">
+                            <div>
+                                <span class="item-name">Student Veg Thali</span>
+                                <span class="item-desc">15g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹80</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-biryani" class="menu-item">
+                            <div>
+                                <span class="item-name">Chicken Biryani</span>
+                                <span class="item-desc">35g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹130</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-paneer" class="menu-item">
+                            <div>
+                                <span class="item-name">Paneer Tikka Masala</span>
+                                <span class="item-desc">15g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹90</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Late Night -->
+                    <div class="menu-card c-4">
+                        <h3>🎮 Late Night Grind</h3>
+                        
+                        <label for="item-maggi" class="menu-item">
+                            <div>
+                                <span class="item-name">Double Masala Maggi</span>
+                                <span class="item-desc">8g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹45</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-sandwich" class="menu-item">
+                            <div>
+                                <span class="item-name">Veg Grilled Sandwich</span>
+                                <span class="item-desc">8g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹50</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-fries" class="menu-item">
+                            <div>
+                                <span class="item-name">Peri Peri Fries</span>
+                                <span class="item-desc">4g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹60</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-coffee" class="menu-item">
+                            <div>
+                                <span class="item-name">Strong Cold Coffee</span>
+                                <span class="item-desc">4g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹40</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+
+                        <label for="item-redbull" class="menu-item">
+                            <div>
+                                <span class="item-name">Energy Drink (Redbull)</span>
+                                <span class="item-desc">0g Protein</span>
+                            </div>
+                            <div class="price-box">
+                                <span class="item-price">₹120</span>
+                                <span class="check-indicator"></span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Section -->
+            <section id="contact" class="section-wrapper">
+                <h2 class="section-title">Comms</h2>
+                
+                <div class="menu-grid" style="margin-bottom: 60px;">
+                    <div class="menu-card" style="text-align: center;">
+                        <h3 style="color: var(--neon-blue); border: none; padding: 0;">📍 Base Coordinates</h3>
+                        <p style="color: var(--text-muted); font-size: 1.1rem;">SIT Campus Hostel Block<br>Ground Floor</p>
+                    </div>
+                    
+                    <div class="menu-card" style="text-align: center;">
+                        <h3 style="color: var(--neon-green); border: none; padding: 0;">🕒 Uptime</h3>
+                        <p style="color: var(--text-muted); font-size: 1.1rem;">Mon-Sat: 07:30 - 23:00<br>Sun: 08:00 - 22:00</p>
+                    </div>
+                    
+                    <div class="menu-card" style="text-align: center;">
+                        <h3 style="color: var(--neon-purple); border: none; padding: 0;">📡 Ping Us</h3>
+                        <p style="color: var(--text-muted); font-size: 1.1rem;">+91 98765 43210<br>canteen@sit.edu</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Floating CSS Cart & Calculator -->
+            <div id="cart" class="floating-cart">
+                <div class="cart-header">TERMINAL // CART</div>
+                <div class="cart-stats">
+                    <div class="stat-box">
+                        <span class="stat-label">Total Bill</span>
+                        <span class="stat-value bill-total">₹</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">Total Protein</span>
+                        <span class="stat-value protein-total">g</span>
+                    </div>
+                </div>
+                <div class="cart-message">Click items above to add to cart.</div>
+            </div>
+
+        </div> <!-- End App Wrapper -->
+    </div> <!-- End State Machine -->
+
+</body>
+</html>
